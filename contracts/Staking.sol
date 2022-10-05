@@ -67,6 +67,6 @@ contract Staking is Ownable, IStaking {
         bool success = stakeToken.transfer(msg.sender, unstakeAmount);
         if (!success) revert UnstakeTransferError(msg.sender, unstakeAmount);
 
-        emit Stake(msg.sender, unstakeAmount);
+        emit Unstake(msg.sender, unstakeAmount);
     }
 }

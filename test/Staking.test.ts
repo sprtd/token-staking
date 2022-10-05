@@ -105,7 +105,7 @@ describe("Staking Contract Test Suite", async () => {
         // const mUSDTAllowance = await mUSDT.connect(addr1).approve(staking.address, addr1MusdtBal2.toString());
         // await mUSDTAllowance.wait();
 
-        // check Deposit emitted event
+        // check Stake emitted event
         await expect(staking.connect(addr1).stake(mUSDT.address, addr1MusdtBal2.toString()))
           .to.emit(staking, "Stake")
           .withArgs(addr1.address, addr1MusdtBal2.toString());
@@ -123,7 +123,7 @@ describe("Staking Contract Test Suite", async () => {
     })
 
 
-    describe("Withdrawal", async () => {
+    describe("Unstaking", async () => {
       describe("Validations", async () => {
         it("Should revert staker attempt to withdraw with 0 mUSDT staked", async () => {
           // revert addr1's  unstake tx since no mUSDT has been staked yet
@@ -131,9 +131,45 @@ describe("Staking Contract Test Suite", async () => {
 
           // revert addr2's unstake tx
           await expect(staking.connect(addr2).unstake()).to.be.reverted
-
         })
       })
+
+
+      it("Should emit Unstake event when mUSDT is unstaked", async () => {
+
+        // addr1 mUSDT balance
+        const addr1MusdtBal2 = await mUSDT.balanceOf(addr1.address);
+
+        //  addr1 staking txn
+        const addr1StakeTxn = await staking.connect(addr1).stake(mUSDT.address, addr1StakeAmount)
+        await addr1StakeTxn.wait()
+
+        // 3s delay
+        await new Promise(resolve => {
+          setTimeout(resolve, 300);
+        })
+
+        // check Unstake emitted event
+        await expect(staking.connect(addr1).unstake())
+          .to.emit(staking, "Unstake")
+          .withArgs(addr1.address, addr1StakeAmount);
+
+
+        // check staking contract mUSDT token bal === the deducted stakeamount
+        expect(await mUSDT.balanceOf(staking.address)).to.be.eq(parseEther("0"))
+
+        // check addr1's staked mUSDT balance in staking contract
+        expect(await staking.stakes(addr1.address)).to.be.eq(parseEther("0"))
+
+
+        //  check the value of total mUSDT staked === 0
+        expect(await staking.totalStakes()).to.be.eq(parseEther("0"))
+
+        // check addr1's wallet mUSDT balance  after unstaking
+        expect(await mUSDT.balanceOf(addr1.address)).to.be.eq(addr1StakeAmount)
+
+      })
+
     })
 
   })
