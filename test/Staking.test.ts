@@ -6,6 +6,7 @@ import { parseEther, formatEther } from "ethers/lib/utils";
 
 import { ethers } from "hardhat";
 const toAddr1 = "10000";
+const addr1StakeAmount = parseEther(toAddr1)
 
 describe("Staking Contract Test Suite", async () => {
 
@@ -20,11 +21,12 @@ describe("Staking Contract Test Suite", async () => {
     stakingMUSDTBalance: any,
     owner: SignerWithAddress,
     addr1: SignerWithAddress,
+    addr2: SignerWithAddress,
     sendRTokenToStakingTxn,
     rTokenToStaking;
 
   beforeEach(async () => {
-    [owner, addr1] = await ethers.getSigners();
+    [owner, addr1, addr2] = await ethers.getSigners();
     // mock usdt contract instance
     const MockUSDT = await ethers.getContractFactory("MockUSDT");
     mUSDT = await MockUSDT.deploy(MUSDT_TOTAL_SUPPLY);
@@ -47,6 +49,15 @@ describe("Staking Contract Test Suite", async () => {
     // owner transfers 10000 mUSDT tokens to addr1
     const transferMUSTToAddr1Txn = await mUSDT.connect(owner).transfer(addr1.address, parseEther(toAddr1));
     await transferMUSTToAddr1Txn.wait();
+
+
+
+    // addr1 mUSDT balance
+    const addr1MusdtBal2 = await mUSDT.balanceOf(addr1.address);
+
+    // set mUSDT token allowance for addr1
+    const mUSDTAllowance = await mUSDT.connect(addr1).approve(staking.address, addr1MusdtBal2.toString());
+    await mUSDTAllowance.wait();
   })
 
 
@@ -82,6 +93,7 @@ describe("Staking Contract Test Suite", async () => {
       });
 
     })
+
     describe("Staking", async () => {
       it("Should emit Stake event when mUSDT is staked", async () => {
 
@@ -89,15 +101,15 @@ describe("Staking Contract Test Suite", async () => {
         const addr1MusdtBal2 = await mUSDT.balanceOf(addr1.address);
 
 
-        // set mUSDT token allowance for addr1
-        const mUSDTAllowance = await mUSDT.connect(addr1).approve(staking.address, addr1MusdtBal2.toString());
-        await mUSDTAllowance.wait();
+        // // set mUSDT token allowance for addr1
+        // const mUSDTAllowance = await mUSDT.connect(addr1).approve(staking.address, addr1MusdtBal2.toString());
+        // await mUSDTAllowance.wait();
 
         // check Deposit emitted event
         await expect(staking.connect(addr1).stake(mUSDT.address, addr1MusdtBal2.toString()))
           .to.emit(staking, "Stake")
           .withArgs(addr1.address, addr1MusdtBal2.toString());
-        
+
 
         // check staking contract mUSDT token bal === the amount sent by addr1
         expect(await mUSDT.balanceOf(staking.address)).to.be.eq(parseEther(toAddr1))
@@ -108,11 +120,21 @@ describe("Staking Contract Test Suite", async () => {
         // check the value of total mUSDT staked === amount sent by addr1
         expect(await staking.totalStakes()).to.be.eq(parseEther(toAddr1))
       })
+    })
 
 
+    describe("Withdrawal", async () => {
+      describe("Validations", async () => {
+        it("Should revert staker attempt to withdraw with 0 mUSDT staked", async () => {
+          // revert addr1's  unstake tx since no mUSDT has been staked yet
+          await expect(staking.connect(addr1).unstake()).to.be.rejectedWith()
+
+          // revert addr2's unstake tx
+          await expect(staking.connect(addr2).unstake()).to.be.reverted
+
+        })
+      })
     })
 
   })
-
-
 });

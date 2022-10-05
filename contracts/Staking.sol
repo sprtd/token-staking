@@ -43,9 +43,20 @@ contract Staking is Ownable, IStaking {
         totalStakes += _amount;
 
         // transfer mUSDT from staker to staking contract
-        stakeToken.transferFrom(msg.sender, address(this), _amount);
+        bool success = stakeToken.transferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
+        if (!success) revert StakeTransferError();
 
         // emit Stake
         emit Stake(msg.sender, _amount);
+    }
+
+    function unstake() external {
+        uint256 withdrawAmount = stakes[msg.sender];
+        if (withdrawAmount == 0)
+            revert UnstakeError(msg.sender, withdrawAmount);
     }
 }

@@ -13,4 +13,10 @@ interface IStaking {
 
     /// @dev Reverts if stake amount is 0
     error StakeAmountError();
+
+    /// @dev Reverts if stake is not successfull transferred to contract
+    error StakeTransferError();
+
+    /// @dev Reverts if there is mismatch during stake unstaking
+    error UnstakeError(address caller, uint256 amount);
 }
