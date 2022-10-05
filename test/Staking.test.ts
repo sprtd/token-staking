@@ -88,7 +88,7 @@ describe("Staking Contract Test Suite", async () => {
         // addr1 mUSDT balance
         const addr1MusdtBal2 = await mUSDT.balanceOf(addr1.address);
 
-  
+
         // set mUSDT token allowance for addr1
         const mUSDTAllowance = await mUSDT.connect(addr1).approve(staking.address, addr1MusdtBal2.toString());
         await mUSDTAllowance.wait();
@@ -97,7 +97,18 @@ describe("Staking Contract Test Suite", async () => {
         await expect(staking.connect(addr1).stake(mUSDT.address, addr1MusdtBal2.toString()))
           .to.emit(staking, "Stake")
           .withArgs(addr1.address, addr1MusdtBal2.toString());
-      });
+        
+
+        // check staking contract mUSDT token bal === the amount sent by addr1
+        expect(await mUSDT.balanceOf(staking.address)).to.be.eq(parseEther(toAddr1))
+
+        // check addr1's staked mUSDT balance in staking contract
+        expect(await staking.stakes(addr1.address)).to.be.eq(parseEther(toAddr1))
+
+        // check the value of total mUSDT staked === amount sent by addr1
+        expect(await staking.totalStakes()).to.be.eq(parseEther(toAddr1))
+      })
+
 
     })
 

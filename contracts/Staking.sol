@@ -12,6 +12,8 @@ contract Staking is Ownable, IStaking {
     IERC20 public stakeToken;
     IERC20 public rewardToken;
 
+    uint256 public totalStakes;
+
     mapping(address => uint256) public stakes;
 
     /**
@@ -33,6 +35,8 @@ contract Staking is Ownable, IStaking {
         if (address(stakeToken) != _stakeToken) revert StakeTokenAddressError();
         if (_amount == 0) revert StakeAmountError();
         stakes[msg.sender] += _amount;
+        totalStakes += _amount;
+        stakeToken.transferFrom(msg.sender, address(this), _amount);
         emit Stake(msg.sender, _amount);
     }
 }
