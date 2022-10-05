@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IStaking.sol";
 
-
-
 contract Staking is Ownable, IStaking {
     IERC20 public stakeToken;
     IERC20 public rewardToken;
@@ -20,9 +18,9 @@ contract Staking is Ownable, IStaking {
      * @dev instantiate contract with stakeToken address
      * @param _stakeToken address of specific stake asset
      */
-    constructor(IERC20 _stakeToken,  IERC20 _rewardToken) {
+    constructor(IERC20 _stakeToken, IERC20 _rewardToken) {
         stakeToken = _stakeToken;
-        rewardToken = _rewardToken; 
+        rewardToken = _rewardToken;
     }
 
     /**
@@ -32,11 +30,22 @@ contract Staking is Ownable, IStaking {
      */
 
     function stake(address _stakeToken, uint256 _amount) external {
+        //  revert if unsupported token is staked
         if (address(stakeToken) != _stakeToken) revert StakeTokenAddressError();
+
+        // Reverts if stake amount is 0
         if (_amount == 0) revert StakeAmountError();
+
+        // add to stakers stake amount
         stakes[msg.sender] += _amount;
+
+        // add to existing total stakes
         totalStakes += _amount;
+
+        // transfer mUSDT from staker to staking contract
         stakeToken.transferFrom(msg.sender, address(this), _amount);
+
+        // emit Stake
         emit Stake(msg.sender, _amount);
     }
 }
