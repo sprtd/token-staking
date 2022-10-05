@@ -4,17 +4,17 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IStaking.sol";
 
-error StakeAddressError();
-error StakeAmountError();
 
-contract Staking is Ownable {
+
+contract Staking is Ownable, IStaking {
     IERC20 public stakeToken;
     IERC20 public rewardToken;
 
     mapping(address => uint256) public stakes;
 
-    event Stake(address staker, uint256 amount);
+
 
     /**
      * @dev instantiate contract with stakeToken address
@@ -22,7 +22,7 @@ contract Staking is Ownable {
      */
     constructor(IERC20 _stakeToken,  IERC20 _rewardToken) {
         stakeToken = _stakeToken;
-        rewardToken = _rewardToken;
+        rewardToken = _rewardToken; 
     }
 
     /**
@@ -32,7 +32,7 @@ contract Staking is Ownable {
      */
 
     function stake(address _stakeToken, uint256 _amount) external {
-        if (address(stakeToken) != _stakeToken) revert StakeAddressError();
+        if (address(stakeToken) != _stakeToken) revert StakeTokenAddressError();
         if (_amount == 0) revert StakeAmountError();
         stakes[msg.sender] += _amount;
         emit Stake(msg.sender, _amount);
