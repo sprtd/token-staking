@@ -10,6 +10,7 @@ error StakeAmountError();
 
 contract Staking is Ownable {
     IERC20 public stakeToken;
+    IERC20 public rewardToken;
 
     mapping(address => uint256) public stakes;
 
@@ -19,8 +20,9 @@ contract Staking is Ownable {
      * @dev instantiate contract with stakeToken address
      * @param _stakeToken address of specific stake asset
      */
-    constructor(IERC20 _stakeToken) {
+    constructor(IERC20 _stakeToken,  IERC20 _rewardToken) {
         stakeToken = _stakeToken;
+        rewardToken = _rewardToken;
     }
 
     /**
