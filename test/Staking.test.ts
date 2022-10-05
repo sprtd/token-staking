@@ -24,7 +24,7 @@ describe("Staking Contract Test Suite", async () => {
     sendRTokenToStakingTxn,
     rTokenToStaking;
 
-    before(async () => {
+    beforeEach(async () => {
       [owner, addr1] = await ethers.getSigners();
       // mock usdt contract instance
       const MockUSDT = await ethers.getContractFactory("MockUSDT");
@@ -41,9 +41,8 @@ describe("Staking Contract Test Suite", async () => {
       staking = await Staking.deploy(mUSDT.address, rToken.address);
   
       const sendRTokenToStakingTxn = await rToken.connect(owner).transfer(staking.address, R_TOKEN_TOTAL_SUPPLY);
-      rTokenToStaking = await sendRTokenToStakingTxn.wait();
+      await sendRTokenToStakingTxn.wait();
   
-      const { logs, events } = rTokenToStaking;
   
       // owner transfers 10000 mUSDT tokens to addr1
       const transferMUSTToAddr1Txn = await mUSDT.connect(owner).transfer(addr1.address, parseEther(toAddr1));
@@ -62,7 +61,12 @@ describe("Staking Contract Test Suite", async () => {
     it("Should set the appropriate rToken total supply", async () => {
       expect(await rToken.totalSupply()).to.equal(R_TOKEN_TOTAL_SUPPLY);
     });
-   
+
+    it("Should check successful transfer of all rTokens from owner to staking contract", async () => {
+      expect(await rToken.balanceOf(staking.address)).to.equal(R_TOKEN_TOTAL_SUPPLY);
+      expect(await rToken.balanceOf(owner.address)).to.equal("0");
+    });
+
   });
 
 
