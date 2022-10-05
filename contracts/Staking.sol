@@ -55,8 +55,18 @@ contract Staking is Ownable, IStaking {
     }
 
     function unstake() external {
-        uint256 withdrawAmount = stakes[msg.sender];
-        if (withdrawAmount == 0)
-            revert UnstakeError(msg.sender, withdrawAmount);
+        uint256 unstakeAmount = stakes[msg.sender];
+        if (unstakeAmount == 0) revert UnstakeError(msg.sender, unstakeAmount);
+
+        // substract staker's current stake
+        stakes[msg.sender] -= unstakeAmount;
+
+        // deduct unstake amount from totalStakes
+        totalStakes -= unstakeAmount;
+
+        bool success = stakeToken.transfer(msg.sender, unstakeAmount);
+        if (!success) revert UnstakeTransferError(msg.sender, unstakeAmount);
+
+        emit Stake(msg.sender, unstakeAmount);
     }
 }
