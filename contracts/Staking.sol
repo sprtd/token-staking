@@ -14,8 +14,6 @@ contract Staking is Ownable, IStaking {
 
     mapping(address => uint256) public stakes;
 
-
-
     /**
      * @dev instantiate contract with stakeToken address
      * @param _stakeToken address of specific stake asset

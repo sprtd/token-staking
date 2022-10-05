@@ -79,6 +79,25 @@ describe("Staking Contract Test Suite", async () => {
       });
 
     })
+    describe("Staking", async () => {
+      it("Should emit Stake event when mUSDT is staked", async () => {
+
+        // addr1 mUSDT balance
+        const addr1MusdtBal2 = await mUSDT.balanceOf(addr1.address);
+
+  
+        // set mUSDT token allowance for addr1
+        const mUSDTAllowance = await mUSDT.connect(addr1).approve(staking.address, addr1MusdtBal2.toString());
+        await mUSDTAllowance.wait();
+
+        // check Deposit emitted event
+        await expect(staking.connect(addr1).stake(mUSDT.address, addr1MusdtBal2.toString()))
+          .to.emit(staking, "Stake")
+          .withArgs(addr1.address, addr1MusdtBal2.toString());
+      });
+
+    })
+
   })
 
 
