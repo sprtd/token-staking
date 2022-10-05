@@ -73,9 +73,12 @@ describe("Staking Contract Test Suite", async () => {
 
   describe("Transactions", async () => {
     describe("Staking Validations", async () => {
-      it("Should revert an attempt to non-mUSDT", async () => {
-        expect(staking.connect(addr1).stake(rToken.address, parseEther("100"))).to.be.reverted;
-        expect(staking.connect(addr1).stake(rToken.address, parseEther("100"))).to.be.revertedWith("StakeTokenAddressError();")
+      it("Should revert an attempt to stake non-mUSDT", async () => {
+        expect(staking.connect(addr1).stake(rToken.address, parseEther("100"))).to.be.reverted
+        expect(staking.connect(addr1).stake(rToken.address, parseEther("100"))).to.be.revertedWith("StakeTokenAddressError()")
+      });
+      it("Should revert an attempt to stake 0 amount of non-mUSDT", async () => {
+        await expect(staking.connect(addr1).stake(mUSDT.address, parseEther("0"))).to.be.reverted
       });
 
     })
