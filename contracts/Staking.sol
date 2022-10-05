@@ -15,8 +15,9 @@ contract Staking is Ownable, IStaking {
     mapping(address => uint256) public stakes;
 
     /**
-     * @dev instantiate contract with stakeToken address
-     * @param _stakeToken address of specific stake asset
+     * @dev instantiate contract with stakeToken and reward token addresses
+     * @param _stakeToken address of stake tokens
+     * @param _rewardToken address of the reward token
      */
     constructor(IERC20 _stakeToken, IERC20 _rewardToken) {
         stakeToken = _stakeToken;
@@ -53,6 +54,10 @@ contract Staking is Ownable, IStaking {
         // emit Stake
         emit Stake(msg.sender, _amount);
     }
+
+    /**
+     * @dev allows only staker to withdraw mUSDT stake
+     */
 
     function unstake() external {
         uint256 unstakeAmount = stakes[msg.sender];
