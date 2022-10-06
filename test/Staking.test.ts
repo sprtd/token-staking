@@ -182,6 +182,10 @@ describe("Staking Contract Test Suite", async () => {
              // revert addr1's attempt to set reward amount
              await expect(staking.connect(addr1).notifyRewardAmount(parseEther("10000"))).to.be.reverted
           })
+          it("should revert owner attempt to set 0 reward rate", async () => {
+             // revert owner attempt to set 0 reward rate
+             await expect(staking.connect(owner).notifyRewardAmount(parseEther("0"))).to.be.reverted
+          })
 
 
         })

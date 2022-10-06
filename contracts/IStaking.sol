@@ -40,4 +40,7 @@ interface IStaking {
 
     /// @dev Reverts if current reward is greater than staking contract's reward token balance
     error RewardGreaterThanRewardBalance();
+
+    /// @dev Reverts owner attempt to set 0 reward rate
+    error ZeroRewardError();
 }
