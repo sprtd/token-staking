@@ -108,6 +108,7 @@ contract Staking is IStaking, ReentrancyGuard {
         if(block.timestamp > rewardFinishAt) {
             rewardRate = _amount.div(rewardDuration);
             console.log("reward rate %s", rewardRate);
+            emit InitialRewardRate(rewardRate, rewardDuration);
         } else {
             uint remainingRewards = rewardRate * (rewardFinishAt - block.timestamp);
             rewardRate = (remainingRewards.add(_amount)).div(rewardDuration);
@@ -117,9 +118,8 @@ contract Staking is IStaking, ReentrancyGuard {
 
         rewardFinishAt = block.timestamp.add(rewardDuration); 
         rewardUpdatedAt = block.timestamp;
-
-
     }
+
 
     function _updateReward(address _account) private {
         rewardPerTokenStored = rewardPerToken();
@@ -134,6 +134,7 @@ contract Staking is IStaking, ReentrancyGuard {
         if (rewardFinishAt >= block.timestamp)
             revert UnfinishedRewardDuration();
         rewardDuration = _duration;
+        emit RewardDurationSet(rewardDuration, block.timestamp);
     }
 
    

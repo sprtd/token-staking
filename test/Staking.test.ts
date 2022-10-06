@@ -117,7 +117,6 @@ describe("Staking Contract Test Suite", async () => {
       })
     })
 
-
     describe("Unstaking", async () => {
       describe("Validations", async () => {
         it("Should revert staker attempt to withdraw with 0 mUSDT staked", async () => {
@@ -155,10 +154,8 @@ describe("Staking Contract Test Suite", async () => {
             .to.emit(staking, "Unstake")
             .withArgs(addr1.address, addr1StakeAmount)
 
-
           // // check staking contract mUSDT token bal === the deducted stakeamount
           expect(await mUSDT.balanceOf(staking.address)).to.be.eq(parseEther("0"))
-
 
           // // check addr1's staked mUSDT balance in staking contract
           expect(await staking.stakes(addr1.address)).to.be.eq(parseEther("0"))
@@ -188,20 +185,41 @@ describe("Staking Contract Test Suite", async () => {
           })
         })
         describe("Set Rewards", async () => {
-
           it("should allow owner set reward rate", async () => {
+            const initializedRewardAmount = parseEther("100000")
 
             // 25s
-            const endTime = ethers.BigNumber.from(
+            const rewardDuration = ethers.BigNumber.from(
               Math.floor(new Date(+new Date() + 0.25).getTime() / 1000)
             );
 
+            // get initialized reward rate value
+            const rewardRate1 = await staking.rewardRate();
+            expect(rewardRate1).to.be.eq(parseEther("0"))
+
             // set reward duration
-            const setRewardDurationTxn = await staking.connect(owner).setRewardDuration(endTime)
+            const setRewardDurationTxn = await staking.connect(owner).setRewardDuration(rewardDuration)
             await setRewardDurationTxn.wait()
 
-            const setRewardRateTxn = await staking.connect(owner).notifyRewardAmount(parseEther("10000"))
-            await setRewardRateTxn.wait()
+
+            // check InitialRewardRate emitted event
+            await expect(staking.connect(owner).notifyRewardAmount(initializedRewardAmount))
+              .to.emit(staking, "InitialRewardRate")
+
+            // // set reward amount
+            // const setRewardRateTxn = await staking.connect(owner).notifyRewardAmount(initializedRewardAmount)
+            // await setRewardRateTxn.wait()
+
+            // get initialized reward rate value
+            const rewardRate2 = await staking.rewardRate();
+
+            // reward amount / reward duration
+            const checkRewardRate = initializedRewardAmount.div(rewardDuration)
+            console.log("check reward rate__", checkRewardRate)
+
+            // check if reward rate is correctly instantiated
+            expect(rewardRate2).to.be.eq(checkRewardRate)
+
           })
         })
       })

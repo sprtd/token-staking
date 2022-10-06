@@ -3,6 +3,8 @@
 pragma solidity ^0.8.9;
 
 interface IStaking {
+
+     /* ========== EVENTS ========== */
     /// @notice Emitted whenever mUSDT is staked
     /// @param staker address of the staker
     /// @param amount The amount of mUSDT stake
@@ -12,6 +14,18 @@ interface IStaking {
     /// @param staker address of the staker
     /// @param amount The amount of mUSDT stake
     event Unstake(address staker, uint256 amount);
+
+    /// @notice Emitted whenever reward duration is set
+    /// @param duration The amount of mUSDT stake
+    /// @param timeInitiated The amount of mUSDT stake
+    event RewardDurationSet(uint256 duration, uint256 timeInitiated);
+
+    /// @notice Emitted whenever notifyRewardAmount is called and the initial reward rate is set
+    /// @param rewardRate reward amount / reward duration
+    /// @param rewardDuration period for which reward is valid
+    event InitialRewardRate(uint256 rewardRate, uint256 rewardDuration);
+
+    /* ========== CUSTOM ERRORS ========== */
 
     /// @dev Reverts if unsupported token is staked
     error StakeTokenAddressError();
@@ -33,7 +47,6 @@ interface IStaking {
 
     /// @dev Reverts if reward duration is not finished
     error UnfinishedRewardDuration();
-
 
     /// @dev Reverts if reward rate == 0
     error RewardZero();
