@@ -28,7 +28,9 @@ interface IStaking {
     /// @dev Reverts if staker's mUSDT is not successfully transferred from staking contract to staker
     error UnstakeTransferError(address caller, uint256 amount);
 
+    /// @dev Reverts if  msg.sender is not owner
+    error OnlyOwner(address caller);
 
-
-
+    /// @dev Reverts if reward duration is not finished
+    error UnfinishedRewardDuration();
 }
