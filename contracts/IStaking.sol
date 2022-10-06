@@ -33,4 +33,11 @@ interface IStaking {
 
     /// @dev Reverts if reward duration is not finished
     error UnfinishedRewardDuration();
+
+
+    /// @dev Reverts if reward rate == 0
+    error RewardZero();
+
+    /// @dev Reverts if current reward is greater than staking contract's reward token balance
+    error RewardGreaterThanRewardBalance();
 }

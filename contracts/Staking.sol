@@ -87,20 +87,36 @@ contract Staking is IStaking, ReentrancyGuard {
     /**
      * @dev allows only staker to withdraw mUSDT stake
      */
-    function unstake() external nonReentrant {
+    function unstake() external nonReentrant  {
         uint256 unstakeAmount = stakes[msg.sender];
         if (unstakeAmount == 0) revert UnstakeError(msg.sender, unstakeAmount);
 
         // substract staker's current stake
-        stakes[msg.sender] = stakes[msg.sender].add(unstakeAmount);
+        stakes[msg.sender] = stakes[msg.sender].sub(unstakeAmount);
 
         // deduct unstake amount from totalStakes
-        totalStakes = totalStakes.add(unstakeAmount);
+        totalStakes = totalStakes.sub(unstakeAmount);
 
         bool success = stakeToken.transfer(msg.sender, unstakeAmount);
         if (!success) revert UnstakeTransferError(msg.sender, unstakeAmount);
 
         emit Unstake(msg.sender, unstakeAmount);
+    }
+
+    function notifyRewardAmount(uint256 _amount) external onlyOwner {
+        if(block.timestamp > rewardFinishAt) {
+            rewardRate = _amount.div(rewardDuration);
+        } else {
+            uint remainingRewards = rewardRate * (rewardFinishAt - block.timestamp);
+            rewardRate = (remainingRewards.add(_amount)).div(rewardDuration);
+        }
+        if(rewardRate <= 0) revert RewardZero();
+        if(rewardRate.mul(rewardDuration) >= rewardToken.balanceOf(address(this))) revert RewardGreaterThanRewardBalance();
+
+        rewardFinishAt = block.timestamp.add(rewardDuration); 
+        rewardUpdatedAt = block.timestamp;
+
+
     }
 
     function _updateReward(address _account) private {
