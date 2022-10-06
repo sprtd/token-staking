@@ -179,15 +179,30 @@ describe("Staking Contract Test Suite", async () => {
       describe("Rewards", async () => {
         describe("Set Rewards Validations", async () => {
           it("should revert non-owner attempt to set reward rate", async () => {
-             // revert addr1's attempt to set reward amount
-             await expect(staking.connect(addr1).notifyRewardAmount(parseEther("10000"))).to.be.reverted
+            // revert addr1's attempt to set reward amount
+            await expect(staking.connect(addr1).notifyRewardAmount(parseEther("10000"))).to.be.reverted
           })
           it("should revert owner attempt to set 0 reward rate", async () => {
-             // revert owner attempt to set 0 reward rate
-             await expect(staking.connect(owner).notifyRewardAmount(parseEther("0"))).to.be.reverted
+            // revert owner attempt to set 0 reward rate
+            await expect(staking.connect(owner).notifyRewardAmount(parseEther("0"))).to.be.reverted
           })
+        })
+        describe("Set Rewards", async () => {
 
+          it("should allow owner set reward rate", async () => {
 
+            // 25s
+            const endTime = ethers.BigNumber.from(
+              Math.floor(new Date(+new Date() + 0.25).getTime() / 1000)
+            );
+
+            // set reward duration
+            const setRewardDurationTxn = await staking.connect(owner).setRewardDuration(endTime)
+            await setRewardDurationTxn.wait()
+
+            const setRewardRateTxn = await staking.connect(owner).notifyRewardAmount(parseEther("10000"))
+            await setRewardRateTxn.wait()
+          })
         })
       })
     })
