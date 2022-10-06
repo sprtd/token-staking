@@ -129,7 +129,7 @@ describe("Staking Contract Test Suite", async () => {
         })
       })
 
-      describe("Successful unstaking", async () => {
+      describe("Successful Unstaking", async () => {
         it("Should emit Unstake event when mUSDT is unstaked", async () => {
 
           const addr1StakeBal = await staking.stakes(addr1.address)
@@ -172,7 +172,18 @@ describe("Staking Contract Test Suite", async () => {
 
 
           // revert addr1's attempt to unstake since all his mUSDT staked has been successfully unstaked
-          await expect(staking.connect(addr1).unstake()).to.be.rejected
+          await expect(staking.connect(addr1).unstake()).to.be.reverted
+        })
+      })
+
+      describe("Rewards", async () => {
+        describe("Set Rewards Validations", async () => {
+          it("should revert non-owner attempt to set reward rate", async () => {
+             // revert addr1's attempt to set reward amount
+             await expect(staking.connect(addr1).notifyRewardAmount(parseEther("10000"))).to.be.reverted
+          })
+
+
         })
       })
     })

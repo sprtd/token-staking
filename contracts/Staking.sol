@@ -106,6 +106,7 @@ contract Staking is IStaking, ReentrancyGuard {
     function notifyRewardAmount(uint256 _amount) external onlyOwner {
         if(block.timestamp > rewardFinishAt) {
             rewardRate = _amount.div(rewardDuration);
+            console.log("reward rate %s", rewardRate);
         } else {
             uint remainingRewards = rewardRate * (rewardFinishAt - block.timestamp);
             rewardRate = (remainingRewards.add(_amount)).div(rewardDuration);
