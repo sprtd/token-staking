@@ -2,15 +2,13 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from "chai";
 
-import { parseEther, formatEther } from "ethers/lib/utils";
+import { parseEther } from "ethers/lib/utils";
 
 import { ethers } from "hardhat";
 const toAddr1 = "10000";
 const addr1StakeAmount = parseEther(toAddr1)
 
 describe("Staking Contract Test Suite", async () => {
-
-
   // test constants
   const MUSDT_TOTAL_SUPPLY = parseEther("100000000");
   const R_TOKEN_TOTAL_SUPPLY = parseEther("100000");
@@ -31,11 +29,9 @@ describe("Staking Contract Test Suite", async () => {
     const MockUSDT = await ethers.getContractFactory("MockUSDT");
     mUSDT = await MockUSDT.deploy(MUSDT_TOTAL_SUPPLY);
 
-
     // reward token contract instance
     const RewardToken = await ethers.getContractFactory("RewardToken");
     rToken = await RewardToken.deploy(R_TOKEN_TOTAL_SUPPLY);
-
 
     // staking contract instance
     const Staking = await ethers.getContractFactory("Staking");
@@ -45,12 +41,9 @@ describe("Staking Contract Test Suite", async () => {
     const sendRTokenToStakingTxn = await rToken.connect(owner).transfer(staking.address, R_TOKEN_TOTAL_SUPPLY);
     await sendRTokenToStakingTxn.wait();
 
-
     // owner transfers 10000 mUSDT tokens to addr1
     const transferMUSTToAddr1Txn = await mUSDT.connect(owner).transfer(addr1.address, parseEther(toAddr1));
     await transferMUSTToAddr1Txn.wait();
-
-
 
     // addr1 mUSDT balance
     const addr1MusdtBal2 = await mUSDT.balanceOf(addr1.address);
@@ -78,8 +71,6 @@ describe("Staking Contract Test Suite", async () => {
     it("Should transfer 10000 mUSDT from deployer to addr1", async () => {
       expect(await mUSDT.balanceOf(addr1.address)).to.equal(parseEther(toAddr1));
     });
-
-
   });
 
   describe("Transactions", async () => {
@@ -154,17 +145,17 @@ describe("Staking Contract Test Suite", async () => {
             .to.emit(staking, "Unstake")
             .withArgs(addr1.address, addr1StakeAmount)
 
-          // // check staking contract mUSDT token bal === the deducted stakeamount
+          // check staking contract mUSDT token bal === the deducted stakeamount
           expect(await mUSDT.balanceOf(staking.address)).to.be.eq(parseEther("0"))
 
-          // // check addr1's staked mUSDT balance in staking contract
+          // check addr1's staked mUSDT balance in staking contract
           expect(await staking.stakes(addr1.address)).to.be.eq(parseEther("0"))
 
 
-          // //  check the value of total mUSDT staked === 0
+          //  check the value of total mUSDT staked === 0
           expect(await staking.totalStakes()).to.be.eq(parseEther("0"))
 
-          // // check addr1's wallet mUSDT balance  after unstaking
+          //  check addr1's wallet mUSDT balance  after unstaking
           expect(await mUSDT.balanceOf(addr1.address)).to.be.eq(addr1StakeAmount)
 
 
@@ -175,6 +166,18 @@ describe("Staking Contract Test Suite", async () => {
 
       describe("Rewards", async () => {
         describe("Set Rewards Validations", async () => {
+          it("should revert non-owner attempt to set reward duration", async () => {
+             // 5s
+             const rewardDuration = ethers.BigNumber.from(
+              Math.floor(new Date(+ new Date() + 0.05).getTime() / 1000)
+            );
+            // revert addr1's attempt to set reward duration
+            await expect(staking.connect(addr1).setRewardDuration(rewardDuration)).to.be.reverted
+          })
+          it("should revert owner attempt to set 0 reward duration", async () => {
+            // revert owner's attempt to set 0 reward duration
+            await expect(staking.connect(owner).setRewardDuration(0)).to.be.reverted
+          })
           it("should revert non-owner attempt to set reward rate", async () => {
             // revert addr1's attempt to set reward amount
             await expect(staking.connect(addr1).notifyRewardAmount(parseEther("10000"))).to.be.reverted
@@ -184,13 +187,14 @@ describe("Staking Contract Test Suite", async () => {
             await expect(staking.connect(owner).notifyRewardAmount(parseEther("0"))).to.be.reverted
           })
         })
+
         describe("Set Rewards", async () => {
           it("should allow owner set reward rate", async () => {
             const initializedRewardAmount = parseEther("100000")
 
-            // 25s
+            // 5s
             const rewardDuration = ethers.BigNumber.from(
-              Math.floor(new Date(+new Date() + 0.25).getTime() / 1000)
+              Math.floor(new Date(+ new Date() + 0.05).getTime() / 1000)
             );
 
             // get initialized reward rate value
@@ -205,6 +209,8 @@ describe("Staking Contract Test Suite", async () => {
             // check InitialRewardRate emitted event
             await expect(staking.connect(owner).notifyRewardAmount(initializedRewardAmount))
               .to.emit(staking, "InitialRewardRate")
+              .withArgs(anyValue, rewardDuration)
+
 
             // // set reward amount
             // const setRewardRateTxn = await staking.connect(owner).notifyRewardAmount(initializedRewardAmount)
@@ -219,6 +225,7 @@ describe("Staking Contract Test Suite", async () => {
 
             // check if reward rate is correctly instantiated
             expect(rewardRate2).to.be.eq(checkRewardRate)
+
 
           })
         })

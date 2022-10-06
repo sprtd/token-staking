@@ -56,4 +56,7 @@ interface IStaking {
 
     /// @dev Reverts owner attempt to set 0 reward rate
     error ZeroRewardError();
+
+    /// @dev Reverts owner attempt to set 0 reward duration
+    error  ZeroRewardDuration();
 }

@@ -131,6 +131,7 @@ contract Staking is IStaking, ReentrancyGuard {
     }
 
     function setRewardDuration(uint256 _duration) external onlyOwner {
+        if(_duration <= 0) revert ZeroRewardDuration();
         if (rewardFinishAt >= block.timestamp)
             revert UnfinishedRewardDuration();
         rewardDuration = _duration;

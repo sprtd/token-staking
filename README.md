@@ -1,6 +1,6 @@
 # Staking Contract
 
-Staking contract allows users to deposit `mUSDT` in return for `rToken` as rewards. Each staker earns `rToken` pro rata the size of their `mUSDT` stake to the total amount of `mUSDT` stake per time
+Staking contract allows users to deposit `mUSDT` in return for `rToken` as rewards. Each staker earns `rToken` pro rata the size of their `mUSDT` stake in relation to the total amount of `mUSDT` staked per time
 
 #### Reward Token Calculation
 
